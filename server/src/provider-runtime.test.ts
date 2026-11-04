@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FakePiRunner } from '@deep-worker/pi-runner';
+import { FakePiRunner } from '@deepdot/pi-runner';
 import { initDatabase } from './db/migration.js';
 import { createProviderConfig, setProviderBalance } from './provider-store.js';
 import { createUser } from './users.js';

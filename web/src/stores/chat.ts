@@ -1,4 +1,4 @@
-import type { StreamEvent } from '@deep-worker/shared';
+import type { StreamEvent } from '@deepdot/shared';
 import { create } from 'zustand';
 import { api, getErrorMessage } from '../api/client.js';
 import { openTurnStream } from '../api/ws.js';

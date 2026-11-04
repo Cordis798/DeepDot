@@ -1,4 +1,4 @@
-import type { StreamEvent, StreamUsage } from '@deep-worker/shared';
+import type { StreamEvent, StreamUsage } from '@deepdot/shared';
 import type { RpcEvent } from './rpc-types.js';
 import { extractTextContent } from './output-parser.js';
 

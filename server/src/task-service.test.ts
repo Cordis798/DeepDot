@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import Database from 'better-sqlite3';
-import { FakePiRunner } from '@deep-worker/pi-runner';
+import { FakePiRunner } from '@deepdot/pi-runner';
 import { initDatabase } from './db/migration.js';
 import { RuntimeRunnerService } from './runtime-runner-service.js';
 import { createWorkspace } from './workspaces.js';

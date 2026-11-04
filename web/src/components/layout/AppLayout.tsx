@@ -44,9 +44,9 @@ function Sidebar({ onNavigate }: { onNavigate: () => void }) {
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col border-r border-slate-200 bg-white px-4 py-5">
       <div className="mb-8 flex items-center gap-3 px-2">
-        <img className="h-10 w-10 rounded-2xl" src="/icon.svg" alt="Deep Worker 标志" />
+        <img className="h-10 w-10 rounded-2xl" src="/icon.svg" alt="DeepDot 标志" />
         <div>
-          <div className="font-semibold tracking-tight text-slate-950">Deep Worker</div>
+          <div className="font-semibold tracking-tight text-slate-950">DeepDot</div>
           <div className="text-xs text-slate-400">Pi 工作台</div>
         </div>
       </div>

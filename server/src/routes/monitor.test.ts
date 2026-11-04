@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { FakePiRunner } from '@deep-worker/pi-runner';
+import { FakePiRunner } from '@deepdot/pi-runner';
 import { createApp } from '../app.js';
 import { initDatabase } from '../db/migration.js';
 import { cookieValue, jsonRequest } from '../helpers/test-app.js';

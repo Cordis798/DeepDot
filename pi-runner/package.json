@@ -1,12 +1,12 @@
 {
-  "name": "@deep-worker/pi-runner",
+  "name": "@deepdot/pi-runner",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@deep-worker/shared": "0.1.0",
+    "@deepdot/shared": "0.1.0",
     "@earendil-works/pi-coding-agent": "0.84.2"
   },
   "scripts": {

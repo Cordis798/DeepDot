@@ -1,4 +1,4 @@
-import type { StreamEvent } from '@deep-worker/shared';
+import type { StreamEvent } from '@deepdot/shared';
 
 export interface TurnStreamHandlers {
   onEvent: (event: StreamEvent) => void;

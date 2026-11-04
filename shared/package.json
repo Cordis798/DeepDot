@@ -1,5 +1,5 @@
 {
-  "name": "@deep-worker/shared",
+  "name": "@deepdot/shared",
   "version": "0.1.0",
   "private": true,
   "type": "module",

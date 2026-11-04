@@ -1,4 +1,4 @@
-import type { StreamEvent } from '@deep-worker/shared';
+import type { StreamEvent } from '@deepdot/shared';
 import { PiSessionManager, type SessionClient, type SessionConfig } from './session-manager.js';
 import { extractFinalReply } from './output-parser.js';
 import { assemblePrompt, type PromptMessage } from './prompt.js';

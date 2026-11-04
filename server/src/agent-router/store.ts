@@ -9,7 +9,7 @@ import type {
   AgentRouterTaskResult,
   AgentRouterTaskSpec,
   AgentRouterTaskStatus,
-} from '@deep-worker/shared';
+} from '@deepdot/shared';
 import { canWorkspaceAction, getWorkspaceAccess } from '../workspace-acl.js';
 
 export type Db = Database.Database;

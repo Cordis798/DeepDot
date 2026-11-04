@@ -1,4 +1,4 @@
-import type { StreamEvent } from '@deep-worker/shared';
+import type { StreamEvent } from '@deepdot/shared';
 import { extractTextContent } from './output-parser.js';
 import type { RuntimeEvent } from './runtime.js';
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FakePiRunner } from '@deep-worker/pi-runner';
+import { FakePiRunner } from '@deepdot/pi-runner';
 import { createChannelAccount } from '../channel-accounts.js';
 import { initDatabase } from '../db/migration.js';
 import { RuntimeRunnerService } from '../runtime-runner-service.js';

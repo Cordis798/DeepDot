@@ -28,7 +28,7 @@ export function LoginPage() {
   }
 
   return (
-    <AuthPage title="欢迎回来" subtitle="登录 Deep Worker，继续你的工作。">
+    <AuthPage title="欢迎回来" subtitle="登录 DeepDot，继续你的工作。">
       <form onSubmit={submit} className="space-y-4">
         <Field label="用户名" value={username} onChange={setUsername} autoComplete="username" />
         <Field
@@ -69,8 +69,8 @@ function AuthPage({
     <main className="grid min-h-screen place-items-center bg-[radial-gradient(circle_at_top_left,#e0e7ff,transparent_40%),#f8fafc] p-5">
       <section className="w-full max-w-md rounded-[2rem] border border-white/80 bg-white/90 p-7 shadow-xl shadow-indigo-950/10 backdrop-blur sm:p-9">
         <div className="mb-8 flex items-center gap-3">
-          <img className="h-11 w-11 rounded-2xl" src="/icon.svg" alt="Deep Worker 标志" />
-          <div className="font-semibold">Deep Worker</div>
+          <img className="h-11 w-11 rounded-2xl" src="/icon.svg" alt="DeepDot 标志" />
+          <div className="font-semibold">DeepDot</div>
         </div>
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
         <p className="mt-2 text-sm text-slate-500">{subtitle}</p>

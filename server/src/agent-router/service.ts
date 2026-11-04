@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import type Database from 'better-sqlite3';
-import type { AgentRouterResult, AgentRouterTaskResult } from '@deep-worker/shared';
+import type { AgentRouterResult, AgentRouterTaskResult } from '@deepdot/shared';
 import { getAgentProfileById } from '../agent-profiles.js';
 import { createAccessibleRuntimeSession } from '../runtime-sessions.js';
 import { RuntimeRunnerService } from '../runtime-runner-service.js';
