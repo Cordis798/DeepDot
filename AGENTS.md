@@ -13,10 +13,10 @@
 
 ```bash
 npm ci --ignore-scripts # 按 lockfile 安装；原因见 M0 基线记录
+npm run build        # 首次检出先按 workspace 依赖顺序生成 dist
 npm run dev          # 启动后端（tsx 直跑）
 npm run typecheck    # 全量类型检查（server/web/pi-runner/shared）
 npm test -- --run    # 运行全部单元测试（一次）
-npm run build        # 构建 server/web/pi-runner/shared
 npm run format:check # 检查格式；修改时只格式化本阶段文件
 ```
 
@@ -36,9 +36,9 @@ M0 验证环境为 Node.js 24；安装问题与实际结果见 [M0 基线](docs/
 每个阶段结束必须全部通过并附实际输出：
 
 ```bash
+npm run build
 npm run typecheck
 npm test -- --run
-npm run build
 git diff --check
 ```
 

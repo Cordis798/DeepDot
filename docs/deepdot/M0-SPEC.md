@@ -16,15 +16,15 @@
 
 ## 允许修改的文件
 
-| 文件 | 目的 |
-| --- | --- |
-| `docs/deepdot/M0-SPEC.md` | 固定本阶段范围与验收标准 |
-| `AGENTS.md` | 更新产品目标、SDK 架构、中文注释和提交规则 |
-| `docs/deepdot/ROADMAP.md` | 保存用户确认的 M0–M14 顺序与阶段验收点 |
-| `docs/deepdot/FEATURE-GAPS.md` | 区分当前实现、参考能力和待开发项 |
-| `docs/deepdot/M0-BASELINE.md` | 记录安装、实际门禁结果与环境问题 |
-| `.github/workflows/ci.yml` | 运行干净安装和既有门禁 |
-| `README.md` | 补充路线图入口与可复现安装要求 |
+| 文件                           | 目的                                       |
+| ------------------------------ | ------------------------------------------ |
+| `docs/deepdot/M0-SPEC.md`      | 固定本阶段范围与验收标准                   |
+| `AGENTS.md`                    | 更新产品目标、SDK 架构、中文注释和提交规则 |
+| `docs/deepdot/ROADMAP.md`      | 保存用户确认的 M0–M14 顺序与阶段验收点     |
+| `docs/deepdot/FEATURE-GAPS.md` | 区分当前实现、参考能力和待开发项           |
+| `docs/deepdot/M0-BASELINE.md`  | 记录安装、实际门禁结果与环境问题           |
+| `.github/workflows/ci.yml`     | 运行干净安装和既有门禁                     |
+| `README.md`                    | 补充路线图入口与可复现安装要求             |
 
 不修改业务源码、数据库、依赖版本、包名和原有测试断言；如发现必须修改源码才能通过的失败，先记录具体证据并单独界定修复范围。
 
