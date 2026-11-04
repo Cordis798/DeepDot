@@ -4,7 +4,7 @@
 
 将现有 deep-worker 逐步改造成 DeepDot：可持续接受委托的云端 Personal Agent，扩展手机/智能眼镜随身交互和智能家居控制。保留 Git 历史、npm workspaces 与现有用户数据，参考 OpenDot 的能力逐项迁移。
 
-- 产品采用单 Agent；既有多 Agent Router 在 M2 退役，后续能力不再依赖角色交接或子 Agent。
+- 产品采用单 Agent；多 Agent Router 已在 M2 退役，仅保留历史 GET；后续能力不依赖角色交接或子 Agent。
 - Cloudflare Workers + SQLite Durable Objects 优先，Node 服务保留身份、凭据、权限和业务数据。
 - 眼镜先走手机/PWA 桥接；首批家居 Provider 为 Home Assistant、米家官方 HA 桥接、涂鸦官方云 API。
 - 开始阶段任务前阅读 [开发路线](docs/deepdot/ROADMAP.md) 和该阶段 Spec；核对现有能力时阅读 [差距清单](docs/deepdot/FEATURE-GAPS.md)。以代码与实际验收为准，不把参考项目或截图的能力记作已完成。

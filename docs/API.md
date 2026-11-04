@@ -15,9 +15,9 @@
 - `/api/agent-profiles/*`：Agent Profile、Prompt 版本和恢复。
 - `/api/workspaces/*`：Workspace、Runtime Session 和归属校验。
 - `/api/workspaces/:jid/runtime-sessions/:sessionId/messages`：提交 Agent 消息并返回持久化流事件。
-- `/api/workspaces/:jid/router/plans`：创建、查询能力感知编排计划。
-- `/api/workspaces/:jid/router/plans/:planId/approve`、`/reject`、`/cancel`、`/dispatch`：审批、拒绝、取消或执行编排计划；高风险计划必须先审批。
-- `/api/workspaces/:jid/router/plans/:planId/events`：查询编排审计事件。
+- `GET /api/workspaces/:jid/router/plans`：只读历史编排计划，不自动改变过期审批。
+- Router 旧 POST（新建计划、approve/reject/cancel/dispatch）、绑定 Agent POST/DELETE：登录后统一返回 `410 / AGENT_ROUTER_RETIRED`，不创建、不执行、不改变历史。
+- `GET /api/workspaces/:jid/agents`、`GET /api/workspaces/:jid/router/plans/:planId` 及 `/events`：仅查询已有绑定、计划、步骤和审计事件；沿用工作区 ACL。
 - `/api/workspaces/:jid/runtime-sessions/:sessionId/turns/:turnId/events`：WebSocket 流式事件。
 - `/api/workspaces/:jid/files/*`、`/api/workspaces/:jid/terminal/*`：文件和终端。
 - `/api/tasks/*`：定时任务、运行历史、停止和恢复。
@@ -56,3 +56,7 @@
 - 无资源归属或资源不存在：`404`，不泄露其他用户资源。
 - 无权限：`403`。
 - 参数校验或业务状态错误：`400`；幂等冲突由具体接口返回 `409`。
+
+## IM 命令
+
+有效命令：/list、/status、/where、/bind、/unbind、/new、/single、/clear、/help。/route、/approve、/reject、/cancel 返回已退役反馈，不传给模型，也不创建协作计划。普通消息与 /single 共用 RuntimeRunnerService。

@@ -5,7 +5,7 @@
 
 DeepDot 是面向个人的自托管 Personal Agent 项目，对标 Grok Dot 的随身交互方向。采用单 Agent 产品路线，逐步扩展云端持久执行、第一视角感知、长期记忆和智能家居控制。
 
-**当前阶段：M1 品牌统一。** 可运行基础包含 Web/PWA、Pi SDK 会话、工作区权限、定时任务、结构化记忆、Skills/MCP 与用量账本。云端 Durable、眼镜和家居控制属于后续阶段，不代表当前已交付。
+**当前阶段：M2 单 Agent 收敛。** 可运行基础包含 Web/PWA、Pi SDK 会话、工作区权限、定时任务、结构化记忆、Skills/MCP 与用量账本。云端 Durable、眼镜和家居控制属于后续阶段，不代表当前已交付。
 
 ## 三个使用场景
 
@@ -37,7 +37,7 @@ DeepDot 是面向个人的自托管 Personal Agent 项目，对标 Grok Dot 的�
 | Electron 轻量桌面端                            | 计划中                                     | M12      |
 | OpenTelemetry/Langfuse、逐步耗时用量与失败定位 | 结构化日志已有，完整链路计划中             | M13      |
 
-每项只在此出现一次；详细边界和代码证据见[功能差距清单](docs/deepdot/FEATURE-GAPS.md)。历史协作执行入口将在 M2 退役，不属于 DeepDot 产品路线。
+每项只在此出现一次；详细边界和代码证据见[功能差距清单](docs/deepdot/FEATURE-GAPS.md)。历史协作执行入口已在 M2 退役，仅保留受权限保护的历史查询。
 
 ## 架构
 
@@ -99,6 +99,6 @@ git diff --check
 
 - [M0–M14 路线图](docs/deepdot/ROADMAP.md)
 - [API](docs/API.md) · [权限矩阵](docs/ACL-MATRIX.md)
-- [M1 范围与兼容标准](docs/deepdot/M1-SPEC.md)
+- [M2 范围与验收](docs/deepdot/M2-SPEC.md)
 
 截图与演示将在对应功能实际验收后补充，不使用旧品牌截图证明新能力。许可证以仓库实际 LICENSE 为准；当前仓库尚无独立 LICENSE 文件，不展示未经核对的许可证徽章。
