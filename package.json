@@ -1,7 +1,7 @@
 {
-  "name": "deep-worker",
+  "name": "deepdot",
   "version": "0.1.0",
-  "description": "Self-hosted, multi-user Agent workspace (deep-worker-main reproduction with Pi SDK).",
+  "description": "DeepDot: a self-hosted personal agent for lasting tasks, wearable interaction and smart home control.",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -18,16 +18,21 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "vitest run",
     "dev": "npm run dev -w server",
-    "container:build": "npm run build && docker build -t deep-worker-pi:latest -f container/Dockerfile .",
+    "container:build": "npm run build && docker build -t deepdot-pi:latest -f container/Dockerfile .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^22.10.0",
     "prettier": "3.9.6",
     "tsx": "^4.23.12",
     "typescript": "5.9.3",
     "vitest": "^4.1.11"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cordis798/DeepDot.git"
   }
 }

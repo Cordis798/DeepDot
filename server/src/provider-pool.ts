@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import type { PiProviderSelection } from '@deep-worker/pi-runner';
+import type { PiProviderSelection } from '@deepdot/pi-runner';
 import type { ProviderConfigRow } from './provider-store.js';
 
 export type ProviderBalanceStrategy = 'round-robin' | 'weighted' | 'failover';

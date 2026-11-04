@@ -1,4 +1,4 @@
-import type { AgentRouterCandidate, AgentRouterPlanSpec, AgentRouterTaskRisk, AgentRouterTaskSpec } from '@deep-worker/shared';
+import type { AgentRouterCandidate, AgentRouterPlanSpec, AgentRouterTaskRisk, AgentRouterTaskSpec } from '@deepdot/shared';
 
 const INTENT_RULES: Array<{ intent: string; tokens: string[]; capabilities: string[]; risk: AgentRouterTaskRisk }> = [
   { intent: 'engineering', tokens: ['代码', 'code', 'git', '测试', 'bug', '开发'], capabilities: ['code'], risk: 'write' },

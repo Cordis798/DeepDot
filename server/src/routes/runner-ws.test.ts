@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import WebSocket from 'ws';
-import { FakePiRunner } from '@deep-worker/pi-runner';
+import { FakePiRunner } from '@deepdot/pi-runner';
 import { createApp, type App } from '../app.js';
 import { initDatabase } from '../db/migration.js';
 import { startServer } from '../server.js';

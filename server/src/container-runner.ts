@@ -5,11 +5,11 @@ import type {
   AgentRunRequest,
   AgentRunResult,
   AgentRunner,
-} from '@deep-worker/pi-runner';
-import type { PiSdkWorkerClientOptions, RuntimeSession } from '@deep-worker/pi-runner';
-import { PiSdkWorkerClient } from '@deep-worker/pi-runner';
-import { assemblePrompt } from '@deep-worker/pi-runner';
-import { mapRuntimeEvent } from '@deep-worker/pi-runner';
+} from '@deepdot/pi-runner';
+import type { PiSdkWorkerClientOptions, RuntimeSession } from '@deepdot/pi-runner';
+import { PiSdkWorkerClient } from '@deepdot/pi-runner';
+import { assemblePrompt } from '@deepdot/pi-runner';
+import { mapRuntimeEvent } from '@deepdot/pi-runner';
 import { DATA_DIR } from './config.js';
 
 export interface ContainerMount {

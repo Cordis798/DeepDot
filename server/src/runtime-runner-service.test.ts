@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import Database from 'better-sqlite3';
-import { FakePiRunner } from '@deep-worker/pi-runner';
-import type { AgentRunner } from '@deep-worker/pi-runner';
+import { FakePiRunner } from '@deepdot/pi-runner';
+import type { AgentRunner } from '@deepdot/pi-runner';
 import { initDatabase } from './db/migration.js';
 import {
   claimRunnerTurn,
@@ -144,7 +144,7 @@ describe('RuntimeRunnerService', () => {
     const runner: AgentRunner = {
       async run(request) {
         calls.push(request.message);
-        return await new Promise<import('@deep-worker/pi-runner').AgentRunResult>((resolve, reject) => {
+        return await new Promise<import('@deepdot/pi-runner').AgentRunResult>((resolve, reject) => {
           const timer = setTimeout(() => resolve({ sessionId: request.sessionId, reply: '不应完成', events: [], attempts: 1 }), 100);
           request.abortSignal?.addEventListener('abort', () => {
             clearTimeout(timer);

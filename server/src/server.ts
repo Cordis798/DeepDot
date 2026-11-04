@@ -1,5 +1,5 @@
 import { serve as serveHono, type ServerType } from '@hono/node-server';
-import { FakePiRunner } from '@deep-worker/pi-runner';
+import { FakePiRunner } from '@deepdot/pi-runner';
 import { createApp, type App } from './app.js';
 import { hostName, runnerMode, webPort } from './config.js';
 import { openDatabase } from './db/index.js';

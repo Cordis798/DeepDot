@@ -1,9 +1,9 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import type Database from 'better-sqlite3';
-import type { AgentRunner, AgentRunRequest } from '@deep-worker/pi-runner';
-import { SessionQueue, type SessionQueueOptions } from '@deep-worker/pi-runner';
-import type { StreamEvent } from '@deep-worker/shared';
+import type { AgentRunner, AgentRunRequest } from '@deepdot/pi-runner';
+import { SessionQueue, type SessionQueueOptions } from '@deepdot/pi-runner';
+import type { StreamEvent } from '@deepdot/shared';
 import { getAgentProfileById } from './agent-profiles.js';
 import { getAccessibleRuntimeSession } from './runtime-sessions.js';
 import { canWorkspaceAction, getWorkspaceAccess } from './workspace-acl.js';
