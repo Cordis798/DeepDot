@@ -156,7 +156,7 @@ export function IntegrationSetupPage({ mode }: { mode: Mode }) {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-600">
-            Deep Worker 集成
+            DeepDot 集成
           </div>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight">
             {isProvider ? '配置 Provider' : '配置渠道账号'}

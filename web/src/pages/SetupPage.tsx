@@ -36,7 +36,7 @@ export function SetupPage() {
   }
 
   if (initialized === null || initialized) return <div className="grid min-h-screen place-items-center text-sm text-slate-500">正在检查系统状态…</div>;
-  return <AuthPage title="初始化工作台" subtitle="创建第一个管理员账号，开始使用 Deep Worker。">
+  return <AuthPage title="初始化工作台" subtitle="创建第一个管理员账号，开始使用 DeepDot。">
     <form onSubmit={submit} className="space-y-4">
       <Field label="管理员用户名" value={username} onChange={setUsername} autoComplete="username" />
       <Field label="管理员密码" type="password" value={password} onChange={setPassword} autoComplete="new-password" />
