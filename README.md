@@ -84,7 +84,7 @@ npm run dev -w web -- --host 127.0.0.1
 
 仓库与应用为 DeepDot，包为 `deepdot` / `@deepdot/*`。保留 `DEEP_WORKER_*`、`dw_session`、旧 localStorage 键、数据目录和 `deep-worker.db`，现有部署不因改名丢失数据。旧仓库地址由 GitHub 重定向。
 
-白色机器人图标源为 `assets/deepdot.svg`，运行 `npm run generate:icons` 生成 Web/PWA PNG 和 README Logo，构建自动重新生成。新增 `@resvg/resvg-js` 仅用于可重复 SVG 渲染，不参与业务运行。当前没有 Electron 安装包，后续复用同一图标源。
+图标源为用户选定的 `assets/deepdot-logo.png`，`assets/deepdot.svg` 为自动生成的等比 SVG 容器，运行 `npm run generate:icons` 生成 Web/PWA PNG 和 README Logo，构建自动重新生成。新增 `@resvg/resvg-js` 仅用于可重复 SVG 渲染，不参与业务运行。当前没有 Electron 安装包，后续复用同一图标源。
 
 ## 开发与贡献
 
