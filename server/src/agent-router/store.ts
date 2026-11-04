@@ -363,14 +363,12 @@ export function cancelRouterPlan(db: Db, actorUserId: string, workspaceJid: stri
 
 export function getRouterPlan(db: Db, actorUserId: string, workspaceJid: string, id: string): AgentRouterPlanRow | undefined {
   if (!canWorkspaceAction(db, actorUserId, workspaceJid, 'view')) return undefined;
-  expireRouterApprovals(db, id);
   const row = db.prepare('SELECT * FROM agent_router_plans WHERE id = ? AND workspace_jid = ?').get(id, workspaceJid) as PlanDbRow | undefined;
   return row ? mapPlan(row) : undefined;
 }
 
 export function listRouterPlans(db: Db, actorUserId: string, workspaceJid: string): AgentRouterPlanRow[] | undefined {
   if (!canWorkspaceAction(db, actorUserId, workspaceJid, 'view')) return undefined;
-  expireRouterApprovals(db);
   return (db.prepare('SELECT * FROM agent_router_plans WHERE workspace_jid = ? ORDER BY created_at DESC').all(workspaceJid) as PlanDbRow[]).map(mapPlan);
 }
 
