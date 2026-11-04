@@ -37,14 +37,15 @@ jobs:
       - name: 按 lockfile 干净安装
         run: npm ci --ignore-scripts --no-audit --no-fund
 
+      # workspace 通过 dist 导出类型，首次检出必须先按依赖顺序构建。
+      - name: 完整构建
+        run: npm run build
+
       - name: 类型检查
         run: npm run typecheck
 
       - name: 完整测试
         run: npm test -- --run
-
-      - name: 完整构建
-        run: npm run build
 
       - name: 检查本次提交范围的空白错误
         shell: bash
