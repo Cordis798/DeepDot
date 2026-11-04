@@ -4,6 +4,8 @@
 
 <h1 align="center">Deep Worker</h1>
 
+> 本项目按阶段演进为 **DeepDot**：单 Agent 云端个人助手、智能眼镜随身交互与家居控制。当前代码仍保留旧产品行为，品牌统一与多 Agent 退役分别在 M1、M2 实施。参见 [开发路线](./docs/deepdot/ROADMAP.md)、[功能差距](./docs/deepdot/FEATURE-GAPS.md) 和 [M0 基线](./docs/deepdot/M0-BASELINE.md)。
+
 <p align="center">
   自托管、多用户、能力感知的多 Agent 编排工作台
 </p>
@@ -13,7 +15,7 @@
 </p>
 
 <p align="center">
-  <img alt="Node.js 20" src="https://img.shields.io/badge/Node.js-20-339933?logo=nodedotjs&logoColor=white">
+  <img alt="Node.js 24" src="https://img.shields.io/badge/Node.js-24-339933?logo=nodedotjs&logoColor=white">
   <img alt="TypeScript strict" src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white">
   <img alt="Pi Agent SDK" src="https://img.shields.io/badge/Pi-Agent%20SDK-7C3AED">
   <img alt="Hono" src="https://img.shields.io/badge/Hono-API-E36002?logo=hono&logoColor=white">
@@ -189,15 +191,18 @@ React Web / Channel Adapters
 
 ### 环境要求
 
-- Node.js 20+
-- npm 10+
+- Node.js 24（M0 验证版本为 24.15.0）
+- npm（M0 验证版本为 11.12.1）
 
 ### 本地运行
 
 ```bash
 git clone https://github.com/Cordis798/deep-worker.git
 cd deep-worker
-npm install
+npm ci --ignore-scripts
+
+# workspace 通过 dist 导出，首次启动、类型检查和测试前先构建
+npm run build
 
 # 无模型密钥也可使用可重复的 fake runner
 $env:DEEP_WORKER_RUNNER = "fake"
@@ -209,14 +214,16 @@ npm run dev -w web -- --host 127.0.0.1
 
 打开终端输出中的本地地址，完成 Workspace 初始化并创建第一个管理员。
 
+安装参数与现有容器一致，使用依赖包内的预编译模块；实际加载由完整测试和构建验证。首次检出请遵循先构建、后类型检查和测试的顺序，原因与安装失败记录见 [M0 基线](./docs/deepdot/M0-BASELINE.md)。
+
 接入真实模型时，在本地环境变量中配置相应 Provider 凭据，不要把密钥提交到仓库。Runner 会通过 Pi Agent SDK 使用已配置的模型与工具。
 
 ### 质量门禁
 
 ```bash
+npm run build
 npm run typecheck
 npm test -- --run
-npm run build
 git diff --check
 ```
 
@@ -234,6 +241,9 @@ git diff --check
 
 ## 文档
 
+- [DeepDot 分阶段开发路线](./docs/deepdot/ROADMAP.md)
+- [DeepDot 功能差距与验收边界](./docs/deepdot/FEATURE-GAPS.md)
+- [M0 工程基线与实际验证](./docs/deepdot/M0-BASELINE.md)
 - [API 说明](./docs/API.md)
 - [权限矩阵](./docs/ACL-MATRIX.md)
 - [功能对照](./docs/FEATURE-COMPARISON.md)
