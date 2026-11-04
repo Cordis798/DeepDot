@@ -1,12 +1,12 @@
 # M1：DeepDot 品牌统一
 
-目标：将 GitHub 仓库、npm 包、Web/PWA、原创图标与 README 统一为 DeepDot，并保留原提交和用户数据。
+目标：将 GitHub 仓库、npm 包、Web/PWA、白色机器人图标与 README 统一为 DeepDot，并保留原提交和用户数据。
 
 ## 范围与提交
 
 1. 重命名 GitHub 仓库并更新 origin，记录原地址重定向。
 2. 将四个 workspace 和跨包引用改为 @deepdot/*；根包改为 deepdot，由 npm 重新生成 lockfile。按 shared/pi-runner、server、web、根配置拆分提交。
-3. 原创中心圆点与轨迹 SVG，使用单一源生成 Web/PWA 图标和 README Logo；新增可重复生成命令。
+3. 沿用 OpenDot 白色机器人 SVG，使用单一源生成 Web/PWA 图标和 README Logo；新增可重复生成命令。
 4. 更新 Web 页面、manifest、Service Worker 缓存与应用标题。
 5. 重写中文 README，增加原创架构图，完整呈现非多 Agent 目标与真实状态。
 6. 更新路线、差距、协作规范及 M1 验收记录，完成后按用户授权合并 main。

@@ -18,3 +18,5 @@ Node 24.15.0 / npm 11.12.1：干净 npm ci --ignore-scripts、build、typecheck 
 早期两条安装命令重叠导致安装目录暂时不完整，已串行干净安装恢复。npm 初次再生成 lockfile 使用 CRLF 导致较大提交差异，后续用格式化工具统一为 LF；保留已推送提交，最终 PR 的 lockfile 差异仅包含包改名与渲染器相关条目。
 
 本阶段不改变业务逻辑，不退役现有 Router；后者属于 M2。最终以阶段 PR 和合并后的 main CI 为交付证据。用户已明确授权本阶段完成后合并 main。
+
+用户最新调整：Logo 沿用只读参考 OpenDot/assets/miniclaw-icon.svg 的白色机器人，源复制至 assets/deepdot.svg，所有导出重新生成。此要求替代此前原创圆点方案；参考目录未修改。
