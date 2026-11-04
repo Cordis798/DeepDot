@@ -46,15 +46,16 @@ git diff --check
 
 ## Git 环境问题
 
-系统 `C:/Program Files/Git/etc/gitconfig` 为异常内容，解析时报 `bad config line 1`；全局 HTTP/HTTPS 代理指向未监听的本机端口。使用以下命令级设置访问本仓库，不覆盖系统或全局配置：
+系统 `C:/Program Files/Git/etc/gitconfig` 为异常内容，解析时报 `bad config line 1`；全局 HTTP/HTTPS 代理指向未监听的本机端口。直接禁用代理可偶尔成功，但后续推送出现连接超时/重置；最终确认环境变量 `HTTPS_PROXY` 提供了有效代理，使用以下命令级设置，不覆盖系统或全局配置：
 
 ```powershell
 $env:GIT_CONFIG_NOSYSTEM = '1'
-git -c http.proxy= -c https.proxy= -c http.version=HTTP/1.1 fetch origin
-git -c http.proxy= -c https.proxy= -c http.version=HTTP/1.1 push origin feat/deepdot-m0
+$gitProxy = $env:HTTPS_PROXY
+git -c "http.proxy=$gitProxy" -c "https.proxy=$gitProxy" -c http.version=HTTP/1.1 fetch origin
+git -c "http.proxy=$gitProxy" -c "https.proxy=$gitProxy" -c http.version=HTTP/1.1 push origin feat/deepdot-m0
 ```
 
-首次推送遇到连接超时，重试后成功；之后每个独立提交均推送阶段分支，没有改写远端历史。
+推送失败时保留原 commit，仅重试传输；所有独立提交最终进入阶段分支，没有改写远端历史。有效代理优先读取环境变量，不把临时端口固化到仓库。
 
 ## CI 验证
 
@@ -76,7 +77,11 @@ git -c http.proxy= -c https.proxy= -c http.version=HTTP/1.1 push origin feat/dee
 | `85f4397` | 增加 Linux/Windows 自动门禁                         |
 | `4f952bb` | 修正首次检出时的 workspace 构建顺序                 |
 
-本记录与 README 开发入口作为独立文档提交；完整历史可通过 `git log origin/master..HEAD --oneline` 查询。M0 的本地测试数量仍为 87 文件 / 256 用例，没有用文档改动虚增测试数量。
+| `28f99c4` | 记录本地/CI 基线，更新 README 安装顺序和 Node 版本说明 |
+
+验收清单、阶段 PR 和最终传输处理另作一个文档提交；完整历史可通过 `git log origin/master..HEAD --oneline` 查询。M0 的本地测试数量仍为 87 文件 / 256 用例，没有用文档改动虚增测试数量。
+
+阶段 PR：[Cordis798/deep-worker#1](https://github.com/Cordis798/deep-worker/pull/1)。PR 中保留全部小提交；交付时核对 PR HEAD 与本地 HEAD 一致，并确认最新 CI 检查通过。
 
 ## 验收边界与后续
 

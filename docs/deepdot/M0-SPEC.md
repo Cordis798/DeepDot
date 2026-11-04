@@ -41,15 +41,15 @@
 
 ## 验收清单
 
-- [ ] 分支基于最新远端基线，主工作区未提交改动未被覆盖或夹带。
-- [ ] 记录干净安装命令、Node/npm 版本、退出码、失败与处理方式。
-- [ ] `npm run typecheck` 通过。
-- [ ] `npm test -- --run` 通过，并记录实际文件数和用例数。
-- [ ] `npm run build` 通过。
-- [ ] `git diff --check` 通过。
-- [ ] CI 在 push、PR 和手动触发时执行以上门禁，不依赖模型密钥或真实设备。
-- [ ] 路线图完整保留已确认的 Cloudflare 优先、手机桥接和三类家居 Provider 决策。
-- [ ] 差距清单不把多 Agent 列为目标，不把 Fake/接口测试写成真机能力。
-- [ ] 所有小提交已推送 GitHub，提供阶段 PR 与实际 CI 结果。
+- [x] 分支基于最新远端基线，主工作区未提交改动未被覆盖或夹带。
+- [x] 记录干净安装命令、Node/npm 版本、退出码、失败与处理方式。
+- [x] `npm run typecheck` 通过。
+- [x] `npm test -- --run` 通过，并记录实际文件数和用例数。
+- [x] `npm run build` 通过。
+- [x] `git diff --check` 通过。
+- [x] CI 配置 push、PR 和手动触发，无模型密钥或真实设备依赖；push、PR 已实际通过两平台，最新结果在交付时核对。
+- [x] 路线图完整保留已确认的 Cloudflare 优先、手机桥接和三类家居 Provider 决策。
+- [x] 差距清单不把多 Agent 列为目标，不把 Fake/接口测试写成真机能力。
+- [x] 小提交逐项推送 GitHub，已建立 [阶段 PR #1](https://github.com/Cordis798/deep-worker/pull/1)，CI 结果见基线记录。
 
 验收证据集中记录在 [M0 基线](M0-BASELINE.md)。本阶段结束后等待用户确认，不自动进入 M1。
