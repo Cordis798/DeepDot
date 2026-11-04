@@ -18,6 +18,7 @@ export type {
   StreamUsage,
 } from './stream-event.js';
 
+// 历史 Router 数据仍可读取；这些类型不再代表可用的协作执行入口。
 export type {
   AgentRouterApprovalStatus,
   AgentRouterCandidate,

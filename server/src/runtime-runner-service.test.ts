@@ -313,6 +313,70 @@ describe('RuntimeRunnerService', () => {
     await service.close();
   });
 
+  it('恢复时跳过超过 100 个旧 Router 回合，普通 IM 和定时回合仍执行', async () => {
+    const now = new Date('2020-01-01T00:00:00.000Z');
+    const oldTurns: string[] = [];
+    for (let index = 0; index < 103; index += 1) {
+      const submission = createRunnerSubmission(db, {
+        ownerUserId: 'u1', workspaceJid: 'w1', sessionId: 's1',
+        message: `旧协作 ${index}`, idempotencyKey: `router:old-plan:${index}`, now,
+      });
+      oldTurns.push(submission.turn.id);
+      if (index === 0) {
+        claimRunnerTurn(db, submission.turn.id, 'dead-worker', 1, now);
+      } else if (index === 1) {
+        db.prepare("UPDATE runner_turns SET status = 'retry_wait' WHERE id = ?")
+          .run(submission.turn.id);
+      }
+    }
+    const ordinary = ['im:telegram:account:message', 'task-run:scheduled'].map((idempotencyKey) =>
+      createRunnerSubmission(db, {
+        ownerUserId: 'u1', workspaceJid: 'w1', sessionId: 's2',
+        message: idempotencyKey, idempotencyKey,
+        now: new Date('2020-01-02T00:00:00.000Z'),
+      }));
+    claimRunnerTurn(db, ordinary[1]!.turn.id, 'dead-worker', 1, now);
+    const runner = new FakePiRunner({ response: '普通回合已恢复' });
+    const service = new RuntimeRunnerService({ db, runner, retryBaseMs: 0 });
+
+    await service.resumePending();
+
+    expect(runner.calls.map((call) => call.message)).toEqual([
+      'im:telegram:account:message', 'task-run:scheduled',
+    ]);
+    for (const turnId of oldTurns) {
+      expect(getRunnerTurnById(db, turnId)?.status).not.toBe('completed');
+      expect(listRunnerOutbox(db, turnId)).toEqual([]);
+    }
+    for (const submission of ordinary) {
+      expect(getRunnerTurnById(db, submission.turn.id)).toMatchObject({
+        status: 'completed', resultText: '普通回合已恢复',
+      });
+    }
+    await service.close();
+  });
+
+  it('拒绝新建和重放 router: 幂等键，且不写入收件箱或执行回合', async () => {
+    createRunnerSubmission(db, {
+      ownerUserId: 'u1', workspaceJid: 'w1', sessionId: 's1',
+      message: '旧协作', idempotencyKey: 'router:old-plan:old-task',
+    });
+    const before = db.prepare('SELECT * FROM runner_inbox').all();
+    const turnsBefore = db.prepare('SELECT * FROM runner_turns').all();
+    const runner = new FakePiRunner();
+    const service = new RuntimeRunnerService({ db, runner, retryBaseMs: 0 });
+    for (const idempotencyKey of ['router:old-plan:old-task', 'router:new-plan:new-task']) {
+      await expect(service.submit({
+        ownerUserId: 'u1', workspaceJid: 'w1', sessionId: 's1',
+        message: '不可执行', idempotencyKey,
+      })).rejects.toThrow('Router 已退役');
+    }
+    expect(db.prepare('SELECT * FROM runner_inbox').all()).toEqual(before);
+    expect(db.prepare('SELECT * FROM runner_turns').all()).toEqual(turnsBefore);
+    expect(runner.calls).toEqual([]);
+    await service.close();
+  });
+
   it('resumes a stale turn after a service restart', async () => {
     const submission = createRunnerSubmission(db, {
       ownerUserId: 'u1',

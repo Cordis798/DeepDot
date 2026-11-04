@@ -15,6 +15,7 @@ export type StreamEventType =
   | 'init'
   | 'raw_sdk_event';
 
+// subagent 仅用于兼容历史事件，新执行链不创建协作子 Agent。
 export type StreamAgentScope = 'main' | 'task' | 'subagent' | 'system';
 export type StreamDisplayLevel = 'primary' | 'detail' | 'debug';
 

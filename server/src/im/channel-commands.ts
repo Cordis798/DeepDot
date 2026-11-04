@@ -13,11 +13,8 @@ export type ChannelCommand =
   | { kind: 'bind'; workspace: string }
   | { kind: 'unbind' }
   | { kind: 'new'; name?: string }
-  | { kind: 'route'; message: string }
+  | { kind: 'retired'; name: string }
   | { kind: 'single'; message: string }
-  | { kind: 'approve'; planId: string }
-  | { kind: 'reject'; planId: string }
-  | { kind: 'cancel'; planId: string }
   | { kind: 'clear' }
   | { kind: 'help' }
   | { kind: 'unknown'; name: string };
@@ -46,29 +43,24 @@ export function parseChannelCommand(value: string): ChannelCommand | null {
   if (name === 'help') return { kind: 'help' };
   if (name === 'bind') return { kind: 'bind', workspace: parts.join(' ').trim() };
   if (name === 'new') return { kind: 'new', ...(parts.length ? { name: parts.join(' ').trim() } : {}) };
-  if (name === 'route') return { kind: 'route', message: parts.join(' ').trim() };
+  if (['route', 'approve', 'reject', 'cancel'].includes(name)) return { kind: 'retired', name };
   if (name === 'single') return { kind: 'single', message: parts.join(' ').trim() };
-  if (name === 'approve') return { kind: 'approve', planId: parts.join(' ').trim() };
-  if (name === 'reject') return { kind: 'reject', planId: parts.join(' ').trim() };
-  if (name === 'cancel') return { kind: 'cancel', planId: parts.join(' ').trim() };
   return { kind: 'unknown', name };
 }
 
-const HELP_TEXT = '可用命令：/list、/status、/where、/bind <工作区 JID>、/unbind、/new [名称]、/route <跨岗位任务>、/single <普通对话>、/approve <计划 ID>、/reject <计划 ID>、/cancel <计划 ID>、/clear、/help';
+const HELP_TEXT = '可用命令：/list、/status、/where、/bind <工作区 JID>、/unbind、/new [名称]、/single <普通对话>、/clear、/help';
 
 export function createChannelCommandService(options: {
   db: Database.Database;
   mounts: MountService;
   clearSession?: (sessionId: string) => Promise<void> | void;
-  onRouteMessage?: (input: { ownerUserId: string; message: ChannelInboundMessage; route: NonNullable<Extract<ReturnType<MountService['resolveInbound']>, { status: 'resolved' }>['route']> }) => Promise<string | null>;
   onSingleMessage?: (input: { ownerUserId: string; message: ChannelInboundMessage; route: NonNullable<Extract<ReturnType<MountService['resolveInbound']>, { status: 'resolved' }>['route']> }) => Promise<string | null>;
-  onRouterApproval?: (input: { ownerUserId: string; planId: string; approved: boolean; message: ChannelInboundMessage; route: NonNullable<Extract<ReturnType<MountService['resolveInbound']>, { status: 'resolved' }>['route']> }) => Promise<string | null>;
-  onRouterCancel?: (input: { ownerUserId: string; planId: string; message: ChannelInboundMessage; route: NonNullable<Extract<ReturnType<MountService['resolveInbound']>, { status: 'resolved' }>['route']> }) => Promise<string | null>;
 }) {
   async function execute(value: string, context: ChannelCommandContext): Promise<ChannelCommandResult> {
     const command = parseChannelCommand(value);
     if (!command) return { handled: false, reply: '' };
     if (command.kind === 'help') return { handled: true, reply: HELP_TEXT };
+    if (command.kind === 'retired') return { handled: true, reply: `多 Agent 命令 /${command.name} 已退役，请直接发送消息或使用 /single。` };
     if (command.kind === 'unknown') return { handled: true, reply: `未知命令 /${command.name}。${HELP_TEXT}` };
 
     if (command.kind === 'list') {
@@ -97,19 +89,10 @@ export function createChannelCommandService(options: {
     }
 
     const resolved = options.mounts.resolveInbound({ ownerUserId: context.ownerUserId, message: context.message });
-    if (command.kind === 'approve' || command.kind === 'reject' || command.kind === 'cancel') {
-      if (!command.planId) return { handled: true, reply: command.kind === 'approve' ? '用法：/approve <计划 ID>' : command.kind === 'reject' ? '用法：/reject <计划 ID>' : '用法：/cancel <计划 ID>' };
+    if (command.kind === 'single') {
+      if (!command.message) return { handled: true, reply: '用法：/single <普通对话>' };
       if (resolved.status !== 'resolved') return { handled: true, reply: resolved.status === 'unbound' ? '当前群聊尚未绑定工作区。' : '当前聊天暂时没有可用路由。' };
-      if (command.kind === 'cancel' ? !options.onRouterCancel : !options.onRouterApproval) return { handled: true, reply: command.kind === 'cancel' ? '当前渠道未启用取消操作。' : '当前渠道未启用审批操作。' };
-      const reply = command.kind === 'cancel'
-        ? await options.onRouterCancel?.({ ownerUserId: context.ownerUserId, planId: command.planId, message: context.message, route: resolved.route })
-        : await options.onRouterApproval?.({ ownerUserId: context.ownerUserId, planId: command.planId, approved: command.kind === 'approve', message: context.message, route: resolved.route });
-      return { handled: true, reply: reply ?? (command.kind === 'cancel' ? '取消操作已提交。' : '审批操作已提交。') };
-    }
-    if (command.kind === 'route' || command.kind === 'single') {
-      if (!command.message) return { handled: true, reply: command.kind === 'route' ? '用法：/route <跨岗位任务>' : '用法：/single <普通对话>' };
-      if (resolved.status !== 'resolved') return { handled: true, reply: resolved.status === 'unbound' ? '当前群聊尚未绑定工作区。' : '当前聊天暂时没有可用路由。' };
-      const handler = command.kind === 'route' ? options.onRouteMessage : options.onSingleMessage;
+      const handler = options.onSingleMessage;
       if (!handler) return { handled: true, reply: '当前渠道未启用该路由模式。' };
       const reply = await handler({ ownerUserId: context.ownerUserId, message: { ...context.message, text: command.message }, route: resolved.route });
       return { handled: true, reply: reply ?? '任务已提交。' };

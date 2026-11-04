@@ -1,4 +1,4 @@
-const CACHE_NAME = 'deepdot-shell-v1';
+const CACHE_NAME = 'deepdot-shell-v4';
 const SHELL = ['/','/index.html','/manifest.webmanifest','/icon.svg'];
 
 self.addEventListener('install', (event) => {

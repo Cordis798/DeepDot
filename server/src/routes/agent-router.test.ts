@@ -1,166 +1,165 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { FakePiRunner } from '@deepdot/pi-runner';
 import { createApp } from '../app.js';
 import { initDatabase } from '../db/migration.js';
-import { cookieValue, jsonRequest } from '../helpers/test-app.js';
+import { cookieRequest, cookieValue, jsonRequest } from '../helpers/test-app.js';
+import {
+  appendRouterEvent,
+  createAgentBinding,
+  createRouterPlan,
+  setRouterPlanStatus,
+} from '../agent-router/store.js';
 
-async function registerMember(app: ReturnType<typeof createApp>, username: string) {
-  const response = await app.request('/api/auth/register', jsonRequest('/api/auth/register', { username, password: 'password123' }));
-  expect(response.status).toBe(201);
-  return { cookie: cookieValue(response), userId: ((await response.json()) as { user: { id: string } }).user.id };
-}
+describe('Router 退役后的 HTTP 历史接口', () => {
+  let app: ReturnType<typeof createApp>;
+  let db: ReturnType<typeof initDatabase>;
+  let runner: FakePiRunner;
+  let ownerCookie: string;
+  let otherCookie: string;
+  let jid: string;
+  let otherJid: string;
+  let planId: string;
+  let bindingId: string;
+  let historyId: string;
 
-describe('agent router routes', () => {
-  let app: ReturnType<typeof createApp> | undefined;
-  let db: ReturnType<typeof initDatabase> | undefined;
+  beforeEach(async () => {
+    db = initDatabase(':memory:');
+    runner = new FakePiRunner();
+    app = createApp({ db, runner });
+    const setup = await app.request('/api/auth/setup', jsonRequest('/api/auth/setup', {
+      username: 'owner', password: 'password123',
+    }));
+    expect(setup.status).toBe(201);
+    ownerCookie = cookieValue(setup);
+    const owner = await setup.json() as { user: { id: string } };
+    const registration = await app.request('/api/auth/register', jsonRequest('/api/auth/register', {
+      username: 'outsider', password: 'password123',
+    }));
+    expect(registration.status).toBe(201);
+    otherCookie = cookieValue(registration);
+    const profileResponse = await app.request('/api/agent-profiles', jsonRequest('/api/agent-profiles', {
+      name: '历史 Agent',
+    }, ownerCookie));
+    expect(profileResponse.status).toBe(201);
+    const { agent_profile: profile } = await profileResponse.json() as { agent_profile: { id: string } };
+    const workspace = await app.request('/api/workspaces', jsonRequest('/api/workspaces', {
+      name: '历史工作区', agent_profile_id: profile.id,
+    }, ownerCookie));
+    expect(workspace.status).toBe(201);
+    jid = ((await workspace.json()) as { workspace: { jid: string } }).workspace.jid;
+    const otherWorkspace = await app.request('/api/workspaces', jsonRequest('/api/workspaces', {
+      name: '另一工作区',
+    }, ownerCookie));
+    expect(otherWorkspace.status).toBe(201);
+    otherJid = ((await otherWorkspace.json()) as { workspace: { jid: string } }).workspace.jid;
+    const binding = createAgentBinding(db, owner.user.id, jid, { agentProfileId: profile.id });
+    expect(binding.ok).toBe(true);
+    bindingId = binding.binding!.bindingId!;
+    const plan = createRouterPlan(db, owner.user.id, jid, null, '历史待审批任务', {
+      intent: 'engineering', requiredCapabilities: [], fallback: 'single_agent',
+      explanation: '历史方案', risk: 'write', tasks: [{
+        ordinal: 0, bindingId, agentProfileId: profile.id, title: '历史任务',
+        requiredCapabilities: [], input: '历史输入', dependsOn: [], risk: 'write',
+      }],
+    }, null);
+    planId = plan.id;
+    const completed = createRouterPlan(db, owner.user.id, jid, null, '历史已完成任务', {
+      ...plan.route, tasks: [], risk: 'read',
+    }, null);
+    historyId = completed.id;
+    setRouterPlanStatus(db, historyId, 'completed', {
+      planId: historyId, status: 'completed', text: '保留的历史结果', tasks: [],
+    });
+    appendRouterEvent(db, historyId, null, { type: 'completed', text: '保留的历史事件' });
+    // 过期审批也属于历史，读取和退役写入口都不能再推进其状态。
+    db.prepare('UPDATE agent_router_approvals SET expires_at = ? WHERE plan_id = ?')
+      .run('2000-01-01T00:00:00.000Z', planId);
+    db.prepare('UPDATE agent_router_plans SET approval_expires_at = ? WHERE id = ?')
+      .run('2000-01-01T00:00:00.000Z', planId);
+  });
 
   afterEach(async () => {
     await app?.close();
     db?.close();
-    app = undefined;
-    db = undefined;
   });
 
-  it('creates a capability-aware plan, tracks tasks and dispatches it', async () => {
-    db = initDatabase(':memory:');
-    app = createApp({ db, runner: new FakePiRunner({ delayMs: 10, response: (request) => `完成：${request.message}` }) });
-    const setup = await app.request('/api/auth/setup', jsonRequest('/api/auth/setup', { username: 'owner', password: 'password123' }));
-    expect(setup.status).toBe(201);
-    const cookie = cookieValue(setup);
-    const profileResponse = await app.request('/api/agent-profiles', jsonRequest('/api/agent-profiles', { name: '研发 Agent' }, cookie));
-    const profile = (await profileResponse.json()) as { agent_profile: { id: string } };
-    const operationsProfileResponse = await app.request('/api/agent-profiles', jsonRequest('/api/agent-profiles', { name: '运维 Agent' }, cookie));
-    const operationsProfile = (await operationsProfileResponse.json()) as { agent_profile: { id: string } };
-    const workspaceResponse = await app.request('/api/workspaces', jsonRequest('/api/workspaces', { name: '编排工作区', agent_profile_id: profile.agent_profile.id }, cookie));
-    const workspace = (await workspaceResponse.json()) as { workspace: { jid: string } };
-    const jid = workspace.workspace.jid;
-    const binding = await app.request(`/api/workspaces/${jid}/agents`, jsonRequest(`/api/workspaces/${jid}/agents`, { agent_profile_id: profile.agent_profile.id, capabilities: ['code'], role_tags: ['engineering'], priority: 10 }, cookie));
-    expect(binding.status).toBe(201);
-    const bindingBody = (await binding.json()) as { agent: { bindingId: string } };
-    const operationsBinding = await app.request(`/api/workspaces/${jid}/agents`, jsonRequest(`/api/workspaces/${jid}/agents`, { agent_profile_id: operationsProfile.agent_profile.id, capabilities: ['deploy'], role_tags: ['operations'], priority: 10 }, cookie));
-    expect(operationsBinding.status).toBe(201);
+  function writeEndpoints() {
+    const base = `/api/workspaces/${jid}`;
+    return [
+      { method: 'POST', path: `${base}/agents` },
+      { method: 'DELETE', path: `${base}/agents/${bindingId}` },
+      { method: 'POST', path: `${base}/router/plans` },
+      ...['dispatch', 'approve', 'reject', 'cancel'].map((action) => ({
+        method: 'POST', path: `${base}/router/plans/${planId}/${action}`,
+      })),
+    ];
+  }
 
-    const planned = await app.request(`/api/workspaces/${jid}/router/plans`, jsonRequest(`/api/workspaces/${jid}/router/plans`, { message: '请修复代码并发布上线' }, cookie));
-    expect(planned.status).toBe(201);
-    const plan = (await planned.json()) as { plan: { id: string; status: string; approval_required: boolean; route: { tasks: unknown[] } } };
-    expect(plan.plan.route.tasks).toHaveLength(2);
-    expect(plan.plan.status).toBe('awaiting_approval');
-    expect(plan.plan.approval_required).toBe(true);
+  function historyEndpoints(workspaceId = jid) {
+    const base = `/api/workspaces/${workspaceId}`;
+    return [`${base}/agents`, `${base}/router/plans`,
+      `${base}/router/plans/${planId}`, `${base}/router/plans/${historyId}/events`];
+  }
 
-    const detail = await app.request(`/api/workspaces/${jid}/router/plans/${plan.plan.id}`, { headers: { cookie: `dw_session=${cookie}` } });
-    expect(detail.status).toBe(200);
-    const detailBody = (await detail.json()) as { tasks: unknown[] };
-    expect(detailBody.tasks).toHaveLength(2);
-    const blocked = await app.request(`/api/workspaces/${jid}/router/plans/${plan.plan.id}/dispatch`, { method: 'POST', headers: { cookie: `dw_session=${cookie}` } });
-    expect(blocked.status).toBe(409);
-    const approved = await app.request(`/api/workspaces/${jid}/router/plans/${plan.plan.id}/approve`, { method: 'POST', headers: { cookie: `dw_session=${cookie}` } });
-    expect(approved.status).toBe(200);
-    const repeatedApproval = await app.request(`/api/workspaces/${jid}/router/plans/${plan.plan.id}/approve`, { method: 'POST', headers: { cookie: `dw_session=${cookie}` } });
-    expect(repeatedApproval.status).toBe(409);
-    const [dispatched, concurrent] = await Promise.all([
-      app.request(`/api/workspaces/${jid}/router/plans/${plan.plan.id}/dispatch`, { method: 'POST', headers: { cookie: `dw_session=${cookie}` } }),
-      app.request(`/api/workspaces/${jid}/router/plans/${plan.plan.id}/dispatch`, { method: 'POST', headers: { cookie: `dw_session=${cookie}` } }),
-    ]);
-    expect([dispatched.status, concurrent.status].sort()).toEqual([200, 409]);
-    const resultResponse = dispatched.status === 200 ? dispatched : concurrent;
-    const result = (await resultResponse.json()) as { result: { status: string; tasks: Array<{ status: string }> } };
-    expect(result.result.status).toBe('completed');
-    expect(result.result.tasks).toHaveLength(2);
-    expect(result.result.tasks.every((task) => task.status === 'completed')).toBe(true);
+  function snapshot() {
+    return ['workspace_agent_bindings', 'agent_router_plans', 'agent_router_tasks',
+      'agent_router_approvals', 'agent_router_events', 'runner_turns', 'task_runs']
+      .map((table) => db.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all());
+  }
 
-    const parallelPlanResponse = await app.request(`/api/workspaces/${jid}/router/plans`, jsonRequest(`/api/workspaces/${jid}/router/plans`, { message: '请同时分析代码问题和监控日志' }, cookie));
-    expect(parallelPlanResponse.status).toBe(201);
-    const parallelPlan = (await parallelPlanResponse.json()) as { plan: { id: string; route: { tasks: Array<{ dependsOn: number[] }> } } };
-    expect(parallelPlan.plan.route.tasks.every((task) => task.dependsOn.length === 0)).toBe(true);
-    const parallelDispatch = await app.request(`/api/workspaces/${jid}/router/plans/${parallelPlan.plan.id}/dispatch`, { method: 'POST', headers: { cookie: `dw_session=${cookie}` } });
-    expect(parallelDispatch.status).toBe(200);
-    const parallelResult = (await parallelDispatch.json()) as { result: { status: string; tasks: Array<{ status: string }> } };
-    expect(parallelResult.result.status).toBe('completed');
-    expect(parallelResult.result.tasks.every((task) => task.status === 'completed')).toBe(true);
-    const parallelEvents = (await (await app.request(`/api/workspaces/${jid}/router/plans/${parallelPlan.plan.id}/events`, { headers: { cookie: `dw_session=${cookie}` } })).json()) as { events: Array<{ parallel?: boolean }> };
-    expect(parallelEvents.events.filter((event) => event.parallel).length).toBeGreaterThanOrEqual(4);
-
-    const cancelledPlanResponse = await app.request(`/api/workspaces/${jid}/router/plans`, jsonRequest(`/api/workspaces/${jid}/router/plans`, { message: '请修复代码' }, cookie));
-    const cancelledPlan = (await cancelledPlanResponse.json()) as { plan: { id: string } };
-    const cancelled = await app.request(`/api/workspaces/${jid}/router/plans/${cancelledPlan.plan.id}/cancel`, { method: 'POST', headers: { cookie: `dw_session=${cookie}` } });
-    expect(cancelled.status).toBe(200);
-    const cancelledDispatch = await app.request(`/api/workspaces/${jid}/router/plans/${cancelledPlan.plan.id}/dispatch`, { method: 'POST', headers: { cookie: `dw_session=${cookie}` } });
-    expect(cancelledDispatch.status).toBe(200);
-    const cancelledBody = (await cancelledDispatch.json()) as { result: { status: string; tasks: Array<{ status: string }> } };
-    expect(cancelledBody.result.status).toBe('cancelled');
-    expect(cancelledBody.result.tasks.every((task) => task.status === 'skipped')).toBe(true);
-
-    const stalePlanResponse = await app.request(`/api/workspaces/${jid}/router/plans`, jsonRequest(`/api/workspaces/${jid}/router/plans`, { message: '请修复代码' }, cookie));
-    const stalePlan = (await stalePlanResponse.json()) as { plan: { id: string } };
-    expect((await app.request(`/api/workspaces/${jid}/router/plans/${stalePlan.plan.id}/approve`, { method: 'POST', headers: { cookie: `dw_session=${cookie}` } })).status).toBe(200);
-    const profileChanged = await app.request(`/api/agent-profiles/${profile.agent_profile.id}`, jsonRequest(`/api/agent-profiles/${profile.agent_profile.id}`, { identity_prompt: '负责新的研发任务边界' }, cookie, 'PATCH'));
-    expect(profileChanged.status).toBe(200);
-    const profileChangedDispatch = await app.request(`/api/workspaces/${jid}/router/plans/${stalePlan.plan.id}/dispatch`, { method: 'POST', headers: { cookie: `dw_session=${cookie}` } });
-    expect(profileChangedDispatch.status).toBe(409);
-    expect((await app.request(`/api/workspaces/${jid}/agents/${bindingBody.agent.bindingId}`, { method: 'DELETE', headers: { cookie: `dw_session=${cookie}` } })).status).toBe(200);
-    const staleDispatch = await app.request(`/api/workspaces/${jid}/router/plans/${stalePlan.plan.id}/dispatch`, { method: 'POST', headers: { cookie: `dw_session=${cookie}` } });
-    expect(staleDispatch.status).toBe(409);
-  });
-
-  it('按成员岗位能力过滤 Router 候选并拒绝越界任务', async () => {
-    db = initDatabase(':memory:');
-    app = createApp({ db, runner: new FakePiRunner() });
-    const setup = await app.request('/api/auth/setup', jsonRequest('/api/auth/setup', { username: 'owner', password: 'password123' }));
-    expect(setup.status).toBe(201);
-    const ownerCookie = cookieValue(setup);
-    const member = await registerMember(app, 'engmember');
-    const profileResponse = await app.request('/api/agent-profiles', jsonRequest('/api/agent-profiles', { name: '运维 Agent' }, ownerCookie));
-    const profile = (await profileResponse.json()) as { agent_profile: { id: string } };
-    const workspaceResponse = await app.request('/api/workspaces', jsonRequest('/api/workspaces', { name: '岗位治理工作区', agent_profile_id: profile.agent_profile.id }, ownerCookie));
-    const workspace = (await workspaceResponse.json()) as { workspace: { jid: string } };
-    const jid = workspace.workspace.jid;
-    const binding = await app.request(`/api/workspaces/${jid}/agents`, jsonRequest(`/api/workspaces/${jid}/agents`, { agent_profile_id: profile.agent_profile.id, capabilities: ['deploy'], role_tags: ['operations'] }, ownerCookie));
-    expect(binding.status).toBe(201);
-    const added = await app.request(`/api/workspaces/${jid}/members`, jsonRequest(`/api/workspaces/${jid}/members`, { user_id: member.userId, role: 'member', job_role: 'engineering' }, ownerCookie));
-    expect(added.status).toBe(201);
-
-    const planned = await app.request(`/api/workspaces/${jid}/router/plans`, jsonRequest(`/api/workspaces/${jid}/router/plans`, { message: '请发布上线' }, member.cookie));
-    expect(planned.status).toBe(201);
-    const body = (await planned.json()) as { plan: { route: { tasks: unknown[]; fallback: string } } };
-    expect(body.plan.route.tasks).toHaveLength(0);
-    expect(body.plan.route.fallback).toBe('reject');
-
-    const memberPlanResponse = await app.request(`/api/workspaces/${jid}/router/plans`, jsonRequest(`/api/workspaces/${jid}/router/plans`, { message: '写一份总结' }, member.cookie));
-    const memberPlan = (await memberPlanResponse.json()) as { plan: { id: string } };
-    const ownerDispatch = await app.request(`/api/workspaces/${jid}/router/plans/${memberPlan.plan.id}/dispatch`, { method: 'POST', headers: { cookie: `dw_session=${ownerCookie}` } });
-    expect(ownerDispatch.status).toBe(403);
-  });
-
-  it('取消运行中的编排会中止当前 Runner 回合', async () => {
-    db = initDatabase(':memory:');
-    const runner = new FakePiRunner({ delayMs: 250, response: '不应完成' });
-    app = createApp({ db, runner });
-    const setup = await app.request('/api/auth/setup', jsonRequest('/api/auth/setup', { username: 'owner', password: 'password123' }));
-    expect(setup.status).toBe(201);
-    const cookie = cookieValue(setup);
-    const profileResponse = await app.request('/api/agent-profiles', jsonRequest('/api/agent-profiles', { name: '研发 Agent' }, cookie));
-    const profile = (await profileResponse.json()) as { agent_profile: { id: string } };
-    const workspaceResponse = await app.request('/api/workspaces', jsonRequest('/api/workspaces', { name: '取消测试工作区', agent_profile_id: profile.agent_profile.id }, cookie));
-    const workspace = (await workspaceResponse.json()) as { workspace: { jid: string } };
-    const jid = workspace.workspace.jid;
-    const binding = await app.request(`/api/workspaces/${jid}/agents`, jsonRequest(`/api/workspaces/${jid}/agents`, { agent_profile_id: profile.agent_profile.id, capabilities: ['code'], role_tags: ['engineering'] }, cookie));
-    expect(binding.status).toBe(201);
-    const planned = await app.request(`/api/workspaces/${jid}/router/plans`, jsonRequest(`/api/workspaces/${jid}/router/plans`, { message: '请修复代码' }, cookie));
-    const plan = (await planned.json()) as { plan: { id: string } };
-    expect((await app.request(`/api/workspaces/${jid}/router/plans/${plan.plan.id}/approve`, { method: 'POST', headers: { cookie: `dw_session=${cookie}` } })).status).toBe(200);
-
-    const dispatchPromise = app.request(`/api/workspaces/${jid}/router/plans/${plan.plan.id}/dispatch`, { method: 'POST', headers: { cookie: `dw_session=${cookie}` } });
-    for (let attempt = 0; attempt < 50; attempt += 1) {
-      const status = (db.prepare('SELECT status FROM agent_router_plans WHERE id = ?').get(plan.plan.id) as { status?: string } | undefined)?.status;
-      if (status === 'running') break;
-      await new Promise<void>((resolve) => setTimeout(resolve, 5));
+  it('全部旧写入口返回 410，不修改历史、不创建任务或调用 Runner', async () => {
+    const before = snapshot();
+    for (const { method, path } of writeEndpoints()) {
+      const response = await app.request(path, {
+        method, headers: { cookie: `dw_session=${ownerCookie}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ message: '请执行', agent_profile_id: 'new-profile' }),
+      });
+      expect(response.status, path).toBe(410);
+      expect(await response.json()).toEqual({
+        error: expect.stringContaining('已退役'), code: 'AGENT_ROUTER_RETIRED',
+      });
     }
-    const cancelled = await app.request(`/api/workspaces/${jid}/router/plans/${plan.plan.id}/cancel`, { method: 'POST', headers: { cookie: `dw_session=${cookie}` } });
-    expect(cancelled.status).toBe(200);
-    const dispatched = await dispatchPromise;
-    expect(dispatched.status).toBe(200);
-    const result = (await dispatched.json()) as { result: { status: string } };
-    expect(result.result.status).toBe('cancelled');
-    expect(runner.calls).toHaveLength(1);
+    expect(snapshot()).toEqual(before);
+    expect(runner.calls).toHaveLength(0);
+  });
+
+  it('仍能读取绑定、计划、任务和事件，且过期审批与历史结果保持原样', async () => {
+    const before = snapshot();
+    const responses = await Promise.all(historyEndpoints().map((path) =>
+      app.request(path, cookieRequest(ownerCookie))));
+    expect(responses.map((response) => response.status)).toEqual([200, 200, 200, 200]);
+    expect(await responses[0]!.json()).toMatchObject({ agents: [{ bindingId }] });
+    expect(await responses[1]!.json()).toMatchObject({ plans: expect.arrayContaining([
+      expect.objectContaining({ id: planId, status: 'awaiting_approval', approval_status: 'pending' }),
+      expect.objectContaining({ id: historyId, result: expect.objectContaining({ text: '保留的历史结果' }) }),
+    ]) });
+    expect(await responses[2]!.json()).toMatchObject({
+      plan: { id: planId }, tasks: [{ status: 'queued' }],
+    });
+    expect(await responses[3]!.json()).toEqual({ events: [{ type: 'completed', text: '保留的历史事件' }] });
+    expect(snapshot()).toEqual(before);
+    expect(runner.calls).toHaveLength(0);
+  });
+
+  it('历史读取保持工作区 ACL，拒绝跨用户和跨工作区的计划 ID', async () => {
+    for (const path of historyEndpoints()) {
+      expect((await app.request(path, cookieRequest(otherCookie))).status, path).toBe(404);
+    }
+    const base = `/api/workspaces/${otherJid}/router/plans`;
+    for (const suffix of [planId, `${historyId}/events`]) {
+      expect((await app.request(`${base}/${suffix}`, cookieRequest(ownerCookie))).status).toBe(404);
+    }
+    const otherPlans = await app.request(base, cookieRequest(ownerCookie));
+    expect(otherPlans.status).toBe(200);
+    expect(await otherPlans.json()).toEqual({ plans: [] });
+  });
+
+  it('历史读取与全部退役写入口仍要求登录', async () => {
+    for (const path of historyEndpoints()) {
+      expect((await app.request(path)).status, path).toBe(401);
+    }
+    for (const { method, path } of writeEndpoints()) {
+      expect((await app.request(path, { method })).status, path).toBe(401);
+    }
   });
 });

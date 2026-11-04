@@ -1,11 +1,11 @@
-<p align="center"><img src="docs/assets/deepdot-logo.svg" width="112" alt="DeepDot" /></p>
+<p align="center"><img src="web/public/icon-512.png" width="112" alt="DeepDot" /></p>
 <h1 align="center">DeepDot</h1>
 <p align="center"><strong>一个持续接受委托、记住你，并连接随身设备与家庭的个人 AI 助手。</strong></p>
 <p align="center"><a href="https://github.com/Cordis798/DeepDot/actions">CI</a> · <a href="#快速开始">快速开始</a> · <a href="docs/deepdot/ROADMAP.md">路线图</a> · <a href="docs/deepdot/FEATURE-GAPS.md">功能状态</a></p>
 
 DeepDot 是面向个人的自托管 Personal Agent 项目，对标 Grok Dot 的随身交互方向。采用单 Agent 产品路线，逐步扩展云端持久执行、第一视角感知、长期记忆和智能家居控制。
 
-**当前阶段：M1 品牌统一。** 可运行基础包含 Web/PWA、Pi SDK 会话、工作区权限、定时任务、结构化记忆、Skills/MCP 与用量账本。云端 Durable、眼镜和家居控制属于后续阶段，不代表当前已交付。
+**当前阶段：M2 单 Agent 收敛。** 可运行基础包含 Web/PWA、Pi SDK 会话、工作区权限、定时任务、结构化记忆、Skills/MCP 与用量账本。云端 Durable、眼镜和家居控制属于后续阶段，不代表当前已交付。
 
 ## 三个使用场景
 
@@ -37,7 +37,7 @@ DeepDot 是面向个人的自托管 Personal Agent 项目，对标 Grok Dot 的�
 | Electron 轻量桌面端                            | 计划中                                     | M12      |
 | OpenTelemetry/Langfuse、逐步耗时用量与失败定位 | 结构化日志已有，完整链路计划中             | M13      |
 
-每项只在此出现一次；详细边界和代码证据见[功能差距清单](docs/deepdot/FEATURE-GAPS.md)。历史协作执行入口将在 M2 退役，不属于 DeepDot 产品路线。
+每项只在此出现一次；详细边界和代码证据见[功能差距清单](docs/deepdot/FEATURE-GAPS.md)。历史协作执行入口已在 M2 退役，仅保留受权限保护的历史查询。
 
 ## 架构
 
@@ -84,7 +84,7 @@ npm run dev -w web -- --host 127.0.0.1
 
 仓库与应用为 DeepDot，包为 `deepdot` / `@deepdot/*`。保留 `DEEP_WORKER_*`、`dw_session`、旧 localStorage 键、数据目录和 `deep-worker.db`，现有部署不因改名丢失数据。旧仓库地址由 GitHub 重定向。
 
-白色机器人图标源为 `assets/deepdot.svg`，运行 `npm run generate:icons` 生成 Web/PWA PNG 和 README Logo，构建自动重新生成。新增 `@resvg/resvg-js` 仅用于可重复 SVG 渲染，不参与业务运行。当前没有 Electron 安装包，后续复用同一图标源。
+图标源为用户选定的 `assets/deepdot-logo.png`，`assets/deepdot.svg` 为自动生成的等比 SVG 容器，运行 `npm run generate:icons` 生成 Web/PWA PNG 和 README Logo，构建自动重新生成。新增 `@resvg/resvg-js` 仅用于可重复 SVG 渲染，不参与业务运行。当前没有 Electron 安装包，后续复用同一图标源。
 
 ## 开发与贡献
 
@@ -99,6 +99,6 @@ git diff --check
 
 - [M0–M14 路线图](docs/deepdot/ROADMAP.md)
 - [API](docs/API.md) · [权限矩阵](docs/ACL-MATRIX.md)
-- [M1 范围与兼容标准](docs/deepdot/M1-SPEC.md)
+- [M2 范围与验收](docs/deepdot/M2-SPEC.md)
 
 截图与演示将在对应功能实际验收后补充，不使用旧品牌截图证明新能力。许可证以仓库实际 LICENSE 为准；当前仓库尚无独立 LICENSE 文件，不展示未经核对的许可证徽章。

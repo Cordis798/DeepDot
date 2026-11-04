@@ -148,6 +148,7 @@ export class RuntimeRunnerService {
   }
 
   async submit(input: RuntimeRunnerMessageInput): Promise<RuntimeRunnerResult> {
+    if (input.idempotencyKey.startsWith('router:')) throw new Error('多 Agent Router 已退役');
     const session = getAccessibleRuntimeSession(
       this.db,
       input.ownerUserId,

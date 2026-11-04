@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { MarkdownText } from '../components/chat/MarkdownText.js';
 import { selectSessionMessages, useChatStore, type ChatMessage } from '../stores/chat.js';
 import { useWorkspaceStore } from '../stores/workspaces.js';
-import { useAgentRouterStore } from '../stores/agentRouter.js';
 
 export function ChatPage() {
   const workspaces = useWorkspaceStore((state) => state.workspaces);
@@ -31,24 +30,10 @@ export function ChatPage() {
   const [draft, setDraft] = useState('');
   const [workspaceName, setWorkspaceName] = useState('');
   const [sessionName, setSessionName] = useState('');
-  const [routerOpen, setRouterOpen] = useState(false);
-  const [routerDraft, setRouterDraft] = useState('');
-  const routerPlans = useAgentRouterStore((state) => currentWorkspaceId ? state.plans[currentWorkspaceId] ?? [] : []);
-  const routerAgents = useAgentRouterStore((state) => currentWorkspaceId ? state.agents[currentWorkspaceId] ?? [] : []);
-  const routerError = useAgentRouterStore((state) => state.error);
-  const loadRouter = useAgentRouterStore((state) => state.load);
-  const createRouterPlan = useAgentRouterStore((state) => state.createPlan);
-  const dispatchRouterPlan = useAgentRouterStore((state) => state.dispatch);
-  const approveRouterPlan = useAgentRouterStore((state) => state.approve);
-  const rejectRouterPlan = useAgentRouterStore((state) => state.reject);
-  const cancelRouterPlan = useAgentRouterStore((state) => state.cancel);
 
   useEffect(() => {
     void load();
   }, [load]);
-  useEffect(() => {
-    if (currentWorkspaceId) void loadRouter(currentWorkspaceId);
-  }, [currentWorkspaceId, loadRouter]);
   const currentWorkspace = workspaces.find((item) => item.jid === currentWorkspaceId);
   const currentSessions = currentWorkspaceId ? (sessions[currentWorkspaceId] ?? []) : [];
   const currentMounts = currentWorkspaceId ? (mounts[currentWorkspaceId] ?? []) : [];
@@ -74,13 +59,6 @@ export function ChatPage() {
     if (!currentWorkspaceId || !sessionName.trim()) return;
     await createSession(currentWorkspaceId, sessionName.trim());
     setSessionName('');
-  }
-
-  async function createRouter(event: React.FormEvent) {
-    event.preventDefault();
-    if (!currentWorkspaceId || !routerDraft.trim()) return;
-    await createRouterPlan(currentWorkspaceId, routerDraft.trim());
-    setRouterDraft('');
   }
 
   return (
@@ -175,27 +153,8 @@ export function ChatPage() {
                 停止生成
               </button>
             )}
-            {currentWorkspaceId && access?.actions.converse && (
-              <button onClick={() => setRouterOpen((value) => !value)} className={`rounded-xl border px-3 py-2 text-xs font-semibold ${routerOpen ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
-                Agent Router · 多 Agent 编排
-              </button>
-            )}
           </div>
         </div>
-        {routerOpen && currentWorkspaceId && (
-          <div className="border-b border-indigo-100 bg-indigo-50/60 px-4 py-4 sm:px-6">
-            <form onSubmit={(event) => void createRouter(event)} className="mx-auto flex max-w-4xl gap-2">
-              <input value={routerDraft} onChange={(event) => setRouterDraft(event.target.value)} placeholder="输入跨岗位任务，例如：修复代码并发布上线" className="min-w-0 flex-1 rounded-xl border border-indigo-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500" />
-              <button disabled={!routerDraft.trim()} className="rounded-xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white disabled:opacity-40">规划</button>
-            </form>
-            {routerError && <p className="mx-auto mt-2 max-w-4xl text-xs text-rose-600">{routerError}</p>}
-            <div className="mx-auto mt-3 flex max-w-4xl flex-wrap gap-2 text-[11px] text-indigo-900">
-              <span className="font-semibold">可用 Agent：</span>
-              {routerAgents.length ? routerAgents.map((agent) => <span key={agent.bindingId} className="rounded-full bg-white px-2 py-1">{agent.name} · {agent.capabilities.join('、') || '通用'}</span>) : <span>当前使用工作区默认 Agent</span>}
-            </div>
-            {routerPlans.slice(0, 3).map((plan) => <div key={plan.id} className="mx-auto mt-3 flex max-w-4xl items-center justify-between gap-3 rounded-xl bg-white px-3 py-2 text-xs"><span><strong>{plan.intent}</strong> · {plan.route.explanation} · {plan.status === 'awaiting_approval' ? '待审批' : plan.status}{plan.route.risk && plan.route.risk !== 'read' ? ` · 风险：${plan.route.risk}` : ''}</span><span className="flex shrink-0 gap-2">{plan.status === 'awaiting_approval' && <><button onClick={() => void approveRouterPlan(currentWorkspaceId, plan.id)} className="font-semibold text-emerald-600">批准</button><button onClick={() => void rejectRouterPlan(currentWorkspaceId, plan.id)} className="font-semibold text-rose-600">拒绝</button></>}{plan.status === 'planned' && <button onClick={() => void dispatchRouterPlan(currentWorkspaceId, plan.id)} className="font-semibold text-indigo-600">开始调度</button>}{(plan.status === 'awaiting_approval' || plan.status === 'planned' || plan.status === 'running') && <button onClick={() => void cancelRouterPlan(currentWorkspaceId, plan.id)} className="font-semibold text-slate-500">取消</button>}</span></div>)}
-          </div>
-        )}
         <div className="flex-1 space-y-4 overflow-auto p-4 sm:p-6">
           {error && (
             <div role="alert" className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">

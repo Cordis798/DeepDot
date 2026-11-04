@@ -28,9 +28,6 @@ export interface ChannelManagerOptions {
   transportFactory: (provider: ChannelProvider, accountId: string) => ChannelTransport;
   registry?: ChannelAdapterRegistry;
   onAgentMessage?: (input: ChannelAgentMessageInput) => Promise<string | null>;
-  onRouterMessage?: (input: ChannelAgentMessageInput) => Promise<string | null>;
-  onRouterApproval?: (input: { ownerUserId: string; planId: string; approved: boolean; message: ChannelInboundMessage; route: ChannelRoute }) => Promise<string | null>;
-  onRouterCancel?: (input: { ownerUserId: string; planId: string; message: ChannelInboundMessage; route: ChannelRoute }) => Promise<string | null>;
   retryBaseMs?: number;
   maxAttempts?: number;
 }
@@ -58,10 +55,7 @@ export class ChannelManager {
     this.commands = createChannelCommandService({
       db: this.db,
       mounts: this.mounts,
-      onRouteMessage: options.onRouterMessage,
       onSingleMessage: options.onAgentMessage,
-      onRouterApproval: options.onRouterApproval,
-      onRouterCancel: options.onRouterCancel,
     });
   }
 

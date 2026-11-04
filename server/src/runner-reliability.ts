@@ -493,8 +493,10 @@ export function listRunnableRunnerTurns(db: Db, nowInput?: Date | string): Runne
   return (
     db
       .prepare(
-        `SELECT * FROM runner_turns WHERE status IN ('queued', 'retry_wait')
-       AND available_at <= ? ORDER BY created_at ASC`,
+        `SELECT t.* FROM runner_turns t JOIN runner_inbox i ON i.id = t.inbox_id
+       WHERE t.status IN ('queued', 'retry_wait') AND t.available_at <= ?
+         AND i.idempotency_key NOT GLOB 'router:*'
+       ORDER BY t.created_at ASC`,
       )
       .all(now) as TurnDbRow[]
   ).map(mapTurn);

@@ -62,3 +62,7 @@
 ## M1 品牌更新
 
 仓库与包已统一为 DeepDot / @deepdot/*，Web/PWA、原创图标和 README 已更新。保留旧配置、数据库、会话 Cookie 和本地存储键。上表业务能力仍按 M0 基线解释，品牌更新不代表新增云端或硬件能力。详见 [M1 验收](M1-BASELINE.md)。
+
+## M2 单 Agent 更新
+
+Web 协作面板/store、Router 执行服务与规划器已删除；IM 四类旧协作命令明确退役，Web/IM/Scheduler 使用单 Agent 链路。Router 七个写入口返回 410，历史 GET 与 ACL 保留且不改写审批；schema 和旧数据未迁移。Logo 最终以用户黑银三瓣圆心附件为准。现状与测试变更说明见 [M2 验收](M2-BASELINE.md)，上方 M0 基线表只作历史对照。
