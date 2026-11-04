@@ -1,0 +1,20 @@
+{
+  "name": "@deep-worker/pi-runner",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@deep-worker/shared": "0.1.0",
+    "@earendil-works/pi-coding-agent": "0.84.2"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}
