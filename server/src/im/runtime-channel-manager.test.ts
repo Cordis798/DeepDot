@@ -17,9 +17,16 @@ describe('渠道到 Pi Runner 的闭环', () => {
     createChannelAccount(db, ownerUserId, { provider: 'telegram', name: 'Pi 账号', default_workspace_jid: workspace.jid });
     const account = db.prepare('SELECT id FROM channel_accounts LIMIT 1').get() as { id: string };
     const transport = new FakeTransport();
-    const runnerService = new RuntimeRunnerService({ db, runner: new FakePiRunner({ response: (request) => `Agent 已处理：${request.message}` }), retryBaseMs: 0 });
+    const modelInputs: string[] = [];
+    const runnerService = new RuntimeRunnerService({ db, runner: new FakePiRunner({ response: (request) => { modelInputs.push(request.message); return `Agent 已处理：${request.message}`; } }), retryBaseMs: 0 });
     const manager = createRuntimeChannelManager({ db, runnerService, transportFactory: () => transport });
     await manager.connectAccount(ownerUserId, account.id);
+    for (const text of ['/route 任务', '/approve old', '/reject old', '/cancel old']) {
+      transport.emitMessage({ messageId: text, externalChatId: '100', conversation: 'private', senderId: 'user-1', text });
+      await manager.waitForIdle();
+    }
+    expect(modelInputs).toEqual([]);
+    expect(transport.sent.filter((item) => item.kind === 'message' && item.text.includes('已退役'))).toHaveLength(4);
     transport.emitMessage({ messageId: 'm-1', externalChatId: '100', conversation: 'private', senderId: 'user-1', text: '执行任务' });
     await manager.waitForIdle();
     expect(transport.sent).toContainEqual(expect.objectContaining({ kind: 'message', text: 'Agent 已处理：执行任务', target: { externalChatId: '100' } }));

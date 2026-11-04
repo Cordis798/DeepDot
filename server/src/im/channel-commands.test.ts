@@ -27,11 +27,11 @@ describe('渠道命令', () => {
     expect(parseChannelCommand('/bind web:123')).toEqual({ kind: 'bind', workspace: 'web:123' });
     expect(parseChannelCommand('/new 研发会话')).toEqual({ kind: 'new', name: '研发会话' });
     expect(parseChannelCommand('/clear')).toEqual({ kind: 'clear' });
-    expect(parseChannelCommand('/route 修复代码并发布')).toEqual({ kind: 'route', message: '修复代码并发布' });
+    expect(parseChannelCommand('/route 修复代码并发布')).toEqual({ kind: 'retired', name: 'route' });
     expect(parseChannelCommand('/single 你好')).toEqual({ kind: 'single', message: '你好' });
-    expect(parseChannelCommand('/approve arp_demo')).toEqual({ kind: 'approve', planId: 'arp_demo' });
-    expect(parseChannelCommand('/reject arp_demo')).toEqual({ kind: 'reject', planId: 'arp_demo' });
-    expect(parseChannelCommand('/cancel arp_demo')).toEqual({ kind: 'cancel', planId: 'arp_demo' });
+    expect(parseChannelCommand('/approve arp_demo')).toEqual({ kind: 'retired', name: 'approve' });
+    expect(parseChannelCommand('/reject arp_demo')).toEqual({ kind: 'retired', name: 'reject' });
+    expect(parseChannelCommand('/cancel arp_demo')).toEqual({ kind: 'retired', name: 'cancel' });
     expect(parseChannelCommand('普通消息')).toBeNull();
   });
 
@@ -49,10 +49,15 @@ describe('渠道命令', () => {
     const routed = createChannelCommandService({
       db,
       mounts,
-      onRouteMessage: async ({ message, route }) => `编排 ${route.workspaceJid}: ${message.text}`,
       onSingleMessage: async ({ message }) => `单 Agent：${message.text}`,
     });
-    expect((await routed.execute('/route 修复代码并发布', { ownerUserId, message: groupMessage })).reply).toContain(`编排 ${workspace.jid}`);
+    for (const command of ['/route 任务', '/approve old', '/reject old', '/cancel old']) {
+      const result = await routed.execute(command, { ownerUserId, message: groupMessage });
+      expect(result.handled).toBe(true);
+      expect(result.reply).toContain('已退役');
+    }
+    const help = (await routed.execute('/help', { ownerUserId, message: groupMessage })).reply;
+    for (const command of ['/route', '/approve', '/reject', '/cancel']) expect(help).not.toContain(command);
     expect((await routed.execute('/single 你好', { ownerUserId, message: groupMessage })).reply).toBe('单 Agent：你好');
     const where = await commands.execute('/where', { ownerUserId, message: groupMessage });
     expect(where.reply).toContain(workspace.jid);
