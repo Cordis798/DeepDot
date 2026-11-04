@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">DeepDot</title>
+  <desc id="desc">中心圆点与开放轨迹，代表随身感知与持续执行</desc>
+  <rect width="128" height="128" rx="32" fill="#10233f"/>
+  <path d="M94 42a38 38 0 1 0 3 39" fill="none" stroke="#75d9ed" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="64" cy="64" r="16" fill="#fff"/>
+  <circle cx="99" cy="42" r="7" fill="#75d9ed"/>
+</svg>
