@@ -11,6 +11,7 @@
 - server app、Router 路由与测试：只保留受 ACL 保护的历史 GET；旧写入口返回明确退役错误。
 - IM command/parser/manager/runtime manager 及测试：退役 route/approve/reject/cancel，保留 single 与普通聊天、工作区绑定等命令。
 - Router service/planner 的生产依赖退役；历史 store、共享历史类型和 schema 保留。不删除用户数据、不改写历史结果。
+- RuntimeRunnerService、runner-reliability 及测试：普通持久队列恢复必须排除旧 router: 输入，且过滤在 LIMIT 前完成；入口拒绝重放该保留身份，不影响普通任务。
 - 回归测试验证旧 HTTP/IM 入口无法执行、历史可读且隔离、普通 Web/IM/定时任务仍运行。
 - AGENTS、README、API、路线与差距文档同步单 Agent 现状及验收记录。
 

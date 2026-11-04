@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/assets/deepdot-logo.svg" width="112" alt="DeepDot" /></p>
+<p align="center"><img src="web/public/icon-512.png" width="112" alt="DeepDot" /></p>
 <h1 align="center">DeepDot</h1>
 <p align="center"><strong>一个持续接受委托、记住你，并连接随身设备与家庭的个人 AI 助手。</strong></p>
 <p align="center"><a href="https://github.com/Cordis798/DeepDot/actions">CI</a> · <a href="#快速开始">快速开始</a> · <a href="docs/deepdot/ROADMAP.md">路线图</a> · <a href="docs/deepdot/FEATURE-GAPS.md">功能状态</a></p>
