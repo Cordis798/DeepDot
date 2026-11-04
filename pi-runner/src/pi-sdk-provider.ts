@@ -37,7 +37,7 @@ export async function resolvePiSdkModel(
 
   if (config) {
     runtime.registerProvider(selection.provider, {
-      name: `Deep Worker ${selection.provider}`,
+      name: `DeepDot ${selection.provider}`,
       baseUrl: config.baseUrl,
       api: config.api,
       ...(apiKey ? { apiKey } : {}),

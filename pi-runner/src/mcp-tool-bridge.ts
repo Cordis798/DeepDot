@@ -80,7 +80,7 @@ class JsonRpcMcpClient {
       await this.request('initialize', {
         protocolVersion: '2025-03-26',
         capabilities: {},
-        clientInfo: { name: 'deep-worker', version: '0.1.0' },
+        clientInfo: { name: 'deepdot', version: '0.1.0' },
       }, true);
       this.connected = true;
       await this.transport.notify('notifications/initialized');

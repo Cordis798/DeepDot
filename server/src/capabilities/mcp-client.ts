@@ -32,7 +32,7 @@ export class McpClient {
   async connect(): Promise<void> {
     try {
       await this.transport.connect();
-      await this.transport.request('initialize', { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'deep-worker', version: '0.1.0' } });
+      await this.transport.request('initialize', { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'deepdot', version: '0.1.0' } });
       this.connected = true;
     } catch (error) {
       await this.transport.close().catch(() => undefined);
